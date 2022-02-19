@@ -4,12 +4,15 @@ import {
   CardContent,
   Dialog,
   DialogTitle,
+  IconButton,
   Link,
   Snackbar,
+  Typography,
 } from "@mui/material";
+import ErrorIcon from "@mui/icons-material/Error";
+import CloseIcon from "@mui/icons-material/Close";
 import React, { useState } from "react";
 import { ConvertContentResponse } from "../../../dto/response/convert-content-response.dto";
-import "./convert-content-results.css";
 
 interface ConvertContentResultsProps {
   results: ConvertContentResponse;
@@ -24,19 +27,49 @@ const ConvertContentResults: React.FC<ConvertContentResultsProps> = ({
 }) => {
   const [linkToastVisible, setLinkToastVisible] = useState(false);
   const url = `${window.location.origin}/${results.contentId}?type=${results.type}`;
+  const errored =
+    results.convertedContent &&
+    Object.keys(results.convertedContent).length === 0;
 
   return (
     <>
       <Dialog onClose={handleClose} open={visible} maxWidth="xl">
-        <DialogTitle>Results</DialogTitle>
+        <DialogTitle className="flex items-center justify-between">
+          Results
+          <IconButton onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <div className="flex flex-col gap-6">
-          <Card className="results">
+          <Card
+            style={{
+              overflow: "scroll",
+              height: errored ? "50vh" : "70vh",
+            }}
+          >
             <CardContent>
-              <pre className="">
-                {JSON.stringify(results.convertedContent, null, 2)}
-              </pre>
+              <pre>{JSON.stringify(results.convertedContent, null, 2)}</pre>
             </CardContent>
           </Card>
+          {errored && (
+            <>
+              <DialogTitle
+                className="flex items-center"
+                style={{ paddingTop: 0, paddingBottom: 0 }}
+              >
+                <ErrorIcon className="mr-2" />
+                Errors
+              </DialogTitle>
+              <Card>
+                <CardContent>
+                  <Typography>
+                    Content could not be parsed - please make sure it is in the
+                    correct format.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </>
+          )}
           <Card>
             <CardContent className="flex flex-col md:flex-row justify-between items-center gap-6 flex-wrap break-all">
               <Link href={url} target="_blank">
